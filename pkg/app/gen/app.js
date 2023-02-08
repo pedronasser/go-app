@@ -12,9 +12,9 @@ const goappWasmContentLengthHeader = "{{.WasmContentLengthHeader}}";
 let goappServiceWorkerRegistration;
 let deferredPrompt = null;
 
-goappInitServiceWorker();
-goappWatchForUpdate();
-goappWatchForInstallable();
+// goappInitServiceWorker();
+// goappWatchForUpdate();
+// goappWatchForInstallable();
 goappInitWebAssembly();
 
 // -----------------------------------------------------------------------------
@@ -190,10 +190,10 @@ function goappKeepBodyClean() {
 // Web Assembly
 // -----------------------------------------------------------------------------
 async function goappInitWebAssembly() {
-  if (!goappCanLoadWebAssembly()) {
-    document.getElementById("app-wasm-loader").style.display = "none";
-    return;
-  }
+  // if (!goappCanLoadWebAssembly()) {
+  //   document.getElementById("app-wasm-loader").style.display = "none";
+  //   return;
+  // }
 
   let instantiateStreaming = WebAssembly.instantiateStreaming;
   if (!instantiateStreaming) {
@@ -203,27 +203,27 @@ async function goappInitWebAssembly() {
     };
   }
 
-  const loaderIcon = document.getElementById("app-wasm-loader-icon");
-  const loaderLabel = document.getElementById("app-wasm-loader-label");
+  // const loaderIcon = document.getElementById("app-wasm-loader-icon");
+  // const loaderLabel = document.getElementById("app-wasm-loader-label");
 
-  try {
-    const showProgress = (progress) => {
-      loaderLabel.innerText = goappLoadingLabel.replace("{progress}", progress);
-    };
-    showProgress(0);
+  // try {
+  //   const showProgress = (progress) => {
+  //     loaderLabel.innerText = goappLoadingLabel.replace("{progress}", progress);
+  //   };
+  //   showProgress(0);
 
     const go = new Go();
     const wasm = await instantiateStreaming(
-      fetchWithProgress("{{.Wasm}}", showProgress),
+      fetchWithProgress("{{.Wasm}}", () => {}),
       go.importObject
     );
 
     go.run(wasm.instance);
-  } catch (err) {
-    loaderIcon.className = "goapp-logo";
-    loaderLabel.innerText = err;
-    console.error("loading wasm failed: ", err);
-  }
+  // } catch (err) {
+  //   loaderIcon.className = "goapp-logo";
+  //   loaderLabel.innerText = err;
+  //   console.error("loading wasm failed: ", err);
+  // }
 }
 
 function goappCanLoadWebAssembly() {

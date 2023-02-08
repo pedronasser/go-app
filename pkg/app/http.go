@@ -11,7 +11,6 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -325,23 +324,23 @@ func (h *Handler) initPreRenderedResources() {
 		Body:        h.makeAppJS(),
 	})
 
-	h.pwaResources.Set(ctx, PreRenderedItem{
-		Path:        "/app-worker.js",
-		ContentType: "application/javascript",
-		Body:        h.makeAppWorkerJS(),
-	})
+	// h.pwaResources.Set(ctx, PreRenderedItem{
+	// 	Path:        "/app-worker.js",
+	// 	ContentType: "application/javascript",
+	// 	Body:        h.makeAppWorkerJS(),
+	// })
 
-	h.pwaResources.Set(ctx, PreRenderedItem{
-		Path:        "/manifest.webmanifest",
-		ContentType: "application/manifest+json",
-		Body:        h.makeManifestJSON(),
-	})
+	// h.pwaResources.Set(ctx, PreRenderedItem{
+	// 	Path:        "/manifest.webmanifest",
+	// 	ContentType: "application/manifest+json",
+	// 	Body:        h.makeManifestJSON(),
+	// })
 
-	h.pwaResources.Set(ctx, PreRenderedItem{
-		Path:        "/app.css",
-		ContentType: "text/css",
-		Body:        []byte(appCSS),
-	})
+	// h.pwaResources.Set(ctx, PreRenderedItem{
+	// 	Path:        "/app.css",
+	// 	ContentType: "text/css",
+	// 	Body:        []byte(appCSS),
+	// })
 
 	if h.PreRenderCache == nil {
 		h.PreRenderCache = NewPreRenderLRUCache(
@@ -385,101 +384,101 @@ func (h *Handler) makeAppJS() []byte {
 			LoadingLabel:            h.LoadingLabel,
 			Wasm:                    h.Resources.AppWASM(),
 			WasmContentLengthHeader: h.WasmContentLengthHeader,
-			WorkerJS:                h.resolvePackagePath("/app-worker.js"),
-			AutoUpdateInterval:      h.AutoUpdateInterval.Milliseconds(),
+			// WorkerJS:                h.resolvePackagePath("/app-worker.js"),
+			AutoUpdateInterval: h.AutoUpdateInterval.Milliseconds(),
 		}); err != nil {
 		panic(errors.New("initializing app.js failed").Wrap(err))
 	}
 	return b.Bytes()
 }
 
-func (h *Handler) makeAppWorkerJS() []byte {
-	resources := make(map[string]struct{})
-	setResources := func(res ...string) {
-		for _, r := range res {
-			if r == "" {
-				continue
-			}
-			resources[r] = struct{}{}
-		}
-	}
-	setResources(
-		h.resolvePackagePath("/app.css"),
-		h.resolvePackagePath("/app.js"),
-		h.resolvePackagePath("/manifest.webmanifest"),
-		h.resolvePackagePath("/wasm_exec.js"),
-		h.resolvePackagePath("/"),
-		h.Resources.AppWASM(),
-	)
-	setResources(h.Icon.Default, h.Icon.Large, h.Icon.AppleTouch)
-	setResources(h.Styles...)
-	setResources(h.Scripts...)
-	setResources(h.CacheableResources...)
+// func (h *Handler) makeAppWorkerJS() []byte {
+// 	resources := make(map[string]struct{})
+// 	setResources := func(res ...string) {
+// 		for _, r := range res {
+// 			if r == "" {
+// 				continue
+// 			}
+// 			resources[r] = struct{}{}
+// 		}
+// 	}
+// 	setResources(
+// 		// h.resolvePackagePath("/app.css"),
+// 		h.resolvePackagePath("/app.js"),
+// 		// h.resolvePackagePath("/manifest.webmanifest"),
+// 		h.resolvePackagePath("/wasm_exec.js"),
+// 		h.resolvePackagePath("/"),
+// 		h.Resources.AppWASM(),
+// 	)
+// 	setResources(h.Icon.Default, h.Icon.Large, h.Icon.AppleTouch)
+// 	setResources(h.Styles...)
+// 	setResources(h.Scripts...)
+// 	setResources(h.CacheableResources...)
 
-	resourcesTocache := make([]string, 0, len(resources))
-	for k := range resources {
-		resourcesTocache = append(resourcesTocache, k)
-	}
-	sort.Slice(resourcesTocache, func(a, b int) bool {
-		return strings.Compare(resourcesTocache[a], resourcesTocache[b]) < 0
-	})
+// 	resourcesTocache := make([]string, 0, len(resources))
+// 	for k := range resources {
+// 		resourcesTocache = append(resourcesTocache, k)
+// 	}
+// 	sort.Slice(resourcesTocache, func(a, b int) bool {
+// 		return strings.Compare(resourcesTocache[a], resourcesTocache[b]) < 0
+// 	})
 
-	var b bytes.Buffer
-	if err := template.
-		Must(template.New("app-worker.js").Parse(h.ServiceWorkerTemplate)).
-		Execute(&b, struct {
-			Version          string
-			ResourcesToCache string
-		}{
-			Version:          h.Version,
-			ResourcesToCache: jsonString(resourcesTocache),
-		}); err != nil {
-		panic(errors.New("initializing app-worker.js failed").Wrap(err))
-	}
-	return b.Bytes()
-}
+// 	var b bytes.Buffer
+// 	if err := template.
+// 		Must(template.New("app-worker.js").Parse(h.ServiceWorkerTemplate)).
+// 		Execute(&b, struct {
+// 			Version          string
+// 			ResourcesToCache string
+// 		}{
+// 			Version:          h.Version,
+// 			ResourcesToCache: jsonString(resourcesTocache),
+// 		}); err != nil {
+// 		panic(errors.New("initializing app-worker.js failed").Wrap(err))
+// 	}
+// 	return b.Bytes()
+// }
 
-func (h *Handler) makeManifestJSON() []byte {
-	normalize := func(s string) string {
-		if !strings.HasPrefix(s, "/") {
-			s = "/" + s
-		}
-		if !strings.HasSuffix(s, "/") {
-			s += "/"
-		}
-		return s
-	}
+// func (h *Handler) makeManifestJSON() []byte {
+// 	normalize := func(s string) string {
+// 		if !strings.HasPrefix(s, "/") {
+// 			s = "/" + s
+// 		}
+// 		if !strings.HasSuffix(s, "/") {
+// 			s += "/"
+// 		}
+// 		return s
+// 	}
 
-	var b bytes.Buffer
-	if err := template.
-		Must(template.New("manifest.webmanifest").Parse(manifestJSON)).
-		Execute(&b, struct {
-			ShortName       string
-			Name            string
-			Description     string
-			DefaultIcon     string
-			LargeIcon       string
-			SVGIcon         string
-			BackgroundColor string
-			ThemeColor      string
-			Scope           string
-			StartURL        string
-		}{
-			ShortName:       h.ShortName,
-			Name:            h.Name,
-			Description:     h.Description,
-			DefaultIcon:     h.Icon.Default,
-			LargeIcon:       h.Icon.Large,
-			SVGIcon:         h.Icon.SVG,
-			BackgroundColor: h.BackgroundColor,
-			ThemeColor:      h.ThemeColor,
-			Scope:           normalize(h.Resources.Package()),
-			StartURL:        normalize(h.Resources.Package()),
-		}); err != nil {
-		panic(errors.New("initializing manifest.webmanifest failed").Wrap(err))
-	}
-	return b.Bytes()
-}
+// 	var b bytes.Buffer
+// 	if err := template.
+// 		Must(template.New("manifest.webmanifest").Parse(manifestJSON)).
+// 		Execute(&b, struct {
+// 			ShortName       string
+// 			Name            string
+// 			Description     string
+// 			DefaultIcon     string
+// 			LargeIcon       string
+// 			SVGIcon         string
+// 			BackgroundColor string
+// 			ThemeColor      string
+// 			Scope           string
+// 			StartURL        string
+// 		}{
+// 			ShortName:       h.ShortName,
+// 			Name:            h.Name,
+// 			Description:     h.Description,
+// 			DefaultIcon:     h.Icon.Default,
+// 			LargeIcon:       h.Icon.Large,
+// 			SVGIcon:         h.Icon.SVG,
+// 			BackgroundColor: h.BackgroundColor,
+// 			ThemeColor:      h.ThemeColor,
+// 			Scope:           normalize(h.Resources.Package()),
+// 			StartURL:        normalize(h.Resources.Package()),
+// 		}); err != nil {
+// 		panic(errors.New("initializing manifest.webmanifest failed").Wrap(err))
+// 	}
+// 	return b.Bytes()
+// }
 
 func (h *Handler) initProxyResources() {
 	resources := make(map[string]ProxyResource)
@@ -489,7 +488,7 @@ func (h *Handler) initProxyResources() {
 		case "/wasm_exec.js",
 			"/goapp.js",
 			"/app.js",
-			"/app-worker.js",
+			// "/app-worker.js",
 			"/manifest.json",
 			"/manifest.webmanifest",
 			"/app.css",
@@ -694,19 +693,6 @@ func (h *Handler) servePage(w http.ResponseWriter, r *http.Request) {
 	defer disp.Close()
 
 	disp.Mount(Div().Body(
-		Aside().
-			ID("app-wasm-loader").
-			Class("goapp-app-info").
-			Body(
-				Img().
-					ID("app-wasm-loader-icon").
-					Class("goapp-logo goapp-spin").
-					Src(h.Icon.Default),
-				P().
-					ID("app-wasm-loader-label").
-					Class("goapp-label").
-					Text(page.loadingLabel),
-			),
 		Div().ID("app-pre-render").Body(content),
 	))
 
@@ -764,9 +750,9 @@ func (h *Handler) servePage(w http.ResponseWriter, r *http.Request) {
 				Link().
 					Rel("apple-touch-icon").
 					Href(h.Icon.AppleTouch),
-				Link().
-					Rel("manifest").
-					Href(h.resolvePackagePath("/manifest.webmanifest")),
+				// Link().
+				// 	Rel("manifest").
+				// 	Href(h.resolvePackagePath("/manifest.webmanifest")),
 				Link().
 					Type("text/css").
 					Rel("stylesheet").

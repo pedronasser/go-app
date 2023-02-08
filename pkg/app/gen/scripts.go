@@ -48,14 +48,14 @@ func main() {
 			Var:      "appJS",
 			Filename: "gen/app.js",
 		},
-		{
-			Var:      "manifestJSON",
-			Filename: "gen/manifest.webmanifest",
-		},
-		{
-			Var:      "appCSS",
-			Filename: "gen/app.css",
-		},
+		// {
+		// 	Var:      "manifestJSON",
+		// 	Filename: "gen/manifest.webmanifest",
+		// },
+		// {
+		// 	Var:      "appCSS",
+		// 	Filename: "gen/app.css",
+		// },
 	}
 
 	fmt.Fprintln(f, "const(")
