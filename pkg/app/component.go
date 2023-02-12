@@ -274,26 +274,18 @@ func (c *Compo) getChildren() []UI {
 }
 
 func (c *Compo) mount(d Dispatcher) error {
-	if c.Mounted() {
-		return errors.New("mounting component failed").
-			WithTag("reason", "already mounted").
-			WithTag("name", c.name()).
-			WithTag("kind", c.Kind())
-	}
-
-	if initializer, ok := c.self().(Initializer); ok {
-		initializer.OnInit()
-	}
-
 	c.disp = d
 	c.ctx, c.ctxCancel = context.WithCancel(context.Background())
 
+	if !c.Mounted() {
+		if initializer, ok := c.self().(Initializer); ok {
+			initializer.OnInit()
+		}
+	}
+
 	root := c.render()
 	if err := mount(d, root); err != nil {
-		return errors.New("mounting component failed").
-			WithTag("name", c.name()).
-			WithTag("kind", c.Kind()).
-			Wrap(err)
+		return nil
 	}
 	root.setParent(c.this)
 	c.root = root
